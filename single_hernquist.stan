@@ -1,13 +1,17 @@
 functions {
 
-    real df_hernquist(real[] y, real rho0, real a){
-        //y[1]=r, y[2]=rv
-        //don't really understand the syntax real[] y, ask Jeff
+    real df_hernquist(real[] y, real x, real yv, real zv, real rho0, real a){
+        //y[1]=r, y[2]=xv
+        //don't really understand the syntax real[] y
+
+        //transform into 3d coordinates
+        real pos = sqrt(square(y[1])+square(x))
+        real vel = sqrt(square(y[2])+square(yv)+square(zv))
 
         //define parameters for the distribution function
         real M = 2.*pi()*rho0*pow(a,3.);
-        real pot = -G*M/(y[1]+a) //FIX: need to define G
-        real epsilon = -square(y[2])/2. - pot;
+        real pot = -G*M/(pos+a) //FIX: need to define G
+        real epsilon = -square(vel)/2. - pot;
         real epsilon_tilde = epsilon*a / (G*M);
 
         //distribution function terms
@@ -20,7 +24,6 @@ functions {
         real f_eps = mult_one * mult_two * (bracket_one+bracket_two);
 
         return f_eps;
-
     }
 
 }
@@ -33,8 +36,8 @@ data {
     vector[N] dec_obs; 
 
     // definitely need these
-    vector[N] rv_obs; 
-    vector[N] r_obs; 
+    vector[N] rv_obs; //radial velocity, or the x component of velocity
+    vector[N] r_obs; //this is the coordinates perpendicular to the line of sight, r^2=y^2+z^2
 
     //uncertainties
     vector[N] rv_err
@@ -43,11 +46,11 @@ data {
 
 transformed data {
     //combine data into y[]
-    real y[N,3]; 
+    real y[N,2]; 
 
     for (i in 1:N) {
         y[i,1] = r_obs[i]
-        y[i,2] = rv_obs[i]
+        y[i,2] = xv_obs[i]
     }
 
 }
@@ -56,8 +59,13 @@ parameters {
     real<lower=0> rho0; //density scale 
     real<lower=0> a; //scale factor
 
-    //taken from Jeff, this is used for uncertainties but not sure if I need
-    vector<lower=min(rv_obs - 5 * rv_err), upper=max(rv_obs + 5 * rv_err)>[N] rv;
+    //missing position and velocity componants 
+    real x; //x component of position
+    real yv; //y component of velocity
+    real zv; //z component of velocity
+
+    //taken from Jeff, this is used for uncertainties 
+    vector<lower=min(rv_obs - 5 * rv_err), upper=max(rv_obs + 5 * rv_err)>[N] xv;
     //also don't have any error on the radii
 
 }
@@ -71,7 +79,7 @@ model {
     a ~ 
 
     //priors (what are these?)
-    rv_obs ~ normal(rv, rv_err)
+    rv_obs ~ normal(xv, rv_err)
 
     //likelihood
     for (i in 1:N) {
