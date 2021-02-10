@@ -10,3 +10,4 @@ The Stan code is run in python, using pystan. This is found in [pystan_ngc1407.i
 
 The last notebook, [prelim_1407.ipynb](prelim_1407.ipynb), contains some preliminary analysis of the globular cluster data, as well as a plot of the distribution function used in the Stan model. 
 
+The globular cluster data is in [NGC1407_GC.cat](NGC1407_GC.cat). Radial velocity measurements are in km/s, while radius values (projected distance to the center of the galaxy) are in arcmin. 
