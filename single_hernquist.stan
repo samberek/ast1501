@@ -2,7 +2,7 @@
 
 functions {
 
-    real df_hernquist_lpdf(real[] y, real x, real yv, real zv, real logM, real loga){
+    real df_hernquist_lpdf(real[] y, real x, real v_yz, real logM, real loga){
         //y[1]=r, y[2]=rv
 
         //exponentiate parameters
@@ -11,7 +11,7 @@ functions {
 
         //transform into 3d coordinates
         real pos = sqrt(square(y[1])+square(x)); 
-        real velsq = square(y[2])+square(yv)+square(zv); 
+        real velsq = square(y[2])+square(v_yz); 
 
         //define parameters for the distribution function
         //real M = 2.*pi()*rho0*pow(a,3.); 
@@ -26,7 +26,7 @@ functions {
         real bracket_two = 3*asin(sqrt(epsilon_tilde)) / sqrt(epsilon_tilde*(1-epsilon_tilde));
 
         //put it all together!
-        real f_eps = mult_one * mult_two * (bracket_one+bracket_two) / M;
+        real f_eps = mult_one * mult_two * (bracket_one+bracket_two);
 
         if (epsilon_tilde < 0.) {
             return 0;
@@ -71,11 +71,10 @@ parameters {
 
     //missing position and velocity componants 
     vector<lower=0, upper=100.>[N] x; //x component of position
-    vector<lower=-0, upper=1000.>[N] yv; //y component of velocity
-    vector <lower=-0, upper=1000.>[N] zv; //z component of velocity
+    vector<lower=-0, upper=1500.>[N] v_yz; //y and z component of velocity
 
     //this is used for uncertainties on velocity, comment for troubleshooting
-    vector<lower=min(rv_obs - 5 * rv_err), upper=max(rv_obs + 5 * rv_err)>[N] xv; 
+    //vector<lower=min(rv_obs - 5 * rv_err), upper=max(rv_obs + 5 * rv_err)>[N] xv; 
 
 }
 
@@ -89,17 +88,15 @@ model {
     logM ~ uniform(10,15);
     loga ~ uniform(1, 7);
 
-    //think some more about these priors
-    x ~ normal(0, 40); 
-    yv ~ normal(0, 200); 
-    zv ~ normal(0, 200);
+    x ~ gamma(2.5, 12.5); 
+    v_yz ~ normal(0, 300); 
 
-    rv_obs ~ normal(xv, rv_err); //adding uncertainty, comment for troubleshooting 
+    //rv_obs ~ normal(xv, rv_err); //adding uncertainty, comment for troubleshooting 
 
     //likelihood
     for (i in 1:N) {
         //print(df_hernquist_lpdf(y[i] | x[i], yv[i], zv[i], rho0, a));
-        y[i] ~ df_hernquist(x[i], yv[i], zv[i], logM, loga);
+        y[i] ~ df_hernquist(x[i], v_yz[i], logM, loga);
     }
 //note: do we want the likelihood, or the total mass?? will we calculate the total mass after getting parameter values?
 
