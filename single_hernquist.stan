@@ -66,12 +66,12 @@ transformed data {
 
 parameters {
     //real<lower=0> rho0; //density scale 
-    real<lower=10, upper=16> logM; //total mass
+    real<lower=11, upper=13.5> logM; //total mass
     real<lower=0> loga; //scale factor
 
     //missing position and velocity componants 
     vector<lower=0, upper=100.>[N] x; //x component of position
-    vector<lower=-0, upper=1500.>[N] v_yz; //y and z component of velocity
+    vector<lower=-0, upper=1500.>[N] v_yz; //combined y and z component of velocity
 
     //this is used for uncertainties on velocity, comment for troubleshooting
     //vector<lower=min(rv_obs - 5 * rv_err), upper=max(rv_obs + 5 * rv_err)>[N] xv; 
@@ -85,10 +85,10 @@ model {
     //Wasserman et al 2018 used uniform priors with these values over the log of the parameters
     //unclear if these are the log uniform or just the uniform
     //rho0 ~ uniform(1e2, 1e8); //M_sun/kpc^3
-    logM ~ uniform(10,15);
-    loga ~ uniform(1, 7);
+    logM ~ normal(12.5,0.5); 
+    loga ~ uniform(1, 3);
 
-    x ~ gamma(2.5, 12.5); 
+    x ~ normal(0, 30); 
     v_yz ~ normal(0, 300); 
 
     //rv_obs ~ normal(xv, rv_err); //adding uncertainty, comment for troubleshooting 
