@@ -2,12 +2,12 @@
 
 functions {
 
-    real df_hernquist_lpdf(real[] y, real x, real v_yz, real logM, real loga){
+    real df_hernquist_lpdf(real[] y, real x, real v_yz, real logM, real a){
         //y[1]=r, y[2]=rv
 
         //exponentiate parameters
         real M = pow(10.,logM);
-        real a = pow(10, loga);
+        //real a = pow(10, loga);
 
         //transform into 3d coordinates
         real pos = sqrt(square(y[1])+square(x)); 
@@ -65,9 +65,8 @@ transformed data {
 }
 
 parameters {
-    //real<lower=0> rho0; //density scale 
-    real<lower=11, upper=13.5> logM; //total mass
-    real<lower=0> loga; //scale factor
+    real<lower=12, upper=13.7> logM; //total mass
+    real<lower=0> a; //scale factor
 
     //missing position and velocity componants 
     vector<lower=0, upper=100.>[N] x; //x component of position
@@ -82,11 +81,9 @@ transformed parameters {
 }
 
 model {
-    //Wasserman et al 2018 used uniform priors with these values over the log of the parameters
-    //unclear if these are the log uniform or just the uniform
-    //rho0 ~ uniform(1e2, 1e8); //M_sun/kpc^3
-    logM ~ normal(12.5,0.5); 
-    loga ~ uniform(1, 3);
+    //Wasserman et al 2018 used uniform priors over the log of the parameters
+    logM ~ normal(13.2,0.1); 
+    a ~ normal(5, 3);
 
     x ~ normal(0, 30); 
     v_yz ~ normal(0, 300); 
@@ -96,8 +93,7 @@ model {
     //likelihood
     for (i in 1:N) {
         //print(df_hernquist_lpdf(y[i] | x[i], yv[i], zv[i], rho0, a));
-        y[i] ~ df_hernquist(x[i], v_yz[i], logM, loga);
+        y[i] ~ df_hernquist(x[i], v_yz[i], logM, a);
     }
-//note: do we want the likelihood, or the total mass?? will we calculate the total mass after getting parameter values?
 
 }
