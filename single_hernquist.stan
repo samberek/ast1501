@@ -40,6 +40,18 @@ functions {
 
     }
 
+    vector max_position(vector r_obs, int N){
+        //set the size of the galaxy
+        real R = 120;
+
+        //y[1] is the position data, r, where r^2 = y^2+z^2
+
+        vector[N] x_max_square = square(R) - square(r_obs);
+        vector[N] x_max = sqrt(x_max_square);
+
+        return x_max;
+    }
+
 }
 
 data {
@@ -69,7 +81,7 @@ parameters {
     real<lower=0> a; //scale factor
 
     //missing position and velocity componants 
-    vector<lower=0, upper=100.>[N] x; //x component of position
+    vector<lower=0, upper=1>[N] x_raw; //x component of position
     vector<lower=-0, upper=1500.>[N] v_yz; //combined y and z component of velocity
 
     //this is used for uncertainties on velocity, comment for troubleshooting
@@ -78,6 +90,7 @@ parameters {
 }
 
 transformed parameters {
+    vector[N] x = max_position(r_obs, N) .* x_raw;
 }
 
 model {
@@ -85,7 +98,7 @@ model {
     logM ~ normal(13.2,0.1); 
     a ~ normal(5, 3);
 
-    x ~ normal(0, 30); 
+    x ~ normal(0, 0.25 * max_position(r_obs, N)); 
     v_yz ~ normal(0, 300); 
 
     //rv_obs ~ normal(xv, rv_err); //adding uncertainty, comment for troubleshooting 
