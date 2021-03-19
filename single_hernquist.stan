@@ -26,17 +26,16 @@ functions {
         real bracket_two = 3*asin(sqrt(epsilon_tilde)) / sqrt(epsilon_tilde*(1-epsilon_tilde));
 
         //put it all together!
-        real f_eps = mult_one * mult_two * (bracket_one+bracket_two);
+        real f_eps = mult_one * mult_two * (bracket_one+bracket_two);       
 
-        if (epsilon_tilde < 0.) {
+        if (epsilon_tilde < 0.)
             return 0;
-        }  
 
-        if (epsilon_tilde > 1.) {
+        if (epsilon_tilde > 1.)
             return 0;
-        }         
 
-        return f_eps;
+        else
+            return f_eps;
 
     }
 
@@ -95,10 +94,10 @@ transformed parameters {
 
 model {
     //Wasserman et al 2018 used uniform priors over the log of the parameters
-    logM ~ normal(13.2,0.1); 
+    logM ~ normal(13.2,0.5); 
     a ~ normal(5, 3);
 
-    x ~ normal(0, 0.25 * max_position(r_obs, N)); 
+    x ~ normal(0,0.68 * max_position(r_obs, N)); 
     v_yz ~ normal(0, 300); 
 
     //rv_obs ~ normal(xv, rv_err); //adding uncertainty, comment for troubleshooting 
